@@ -1,0 +1,437 @@
+Problem one:
+-------------
+(deftemplate Father
+	(slot father)
+	(slot son)
+)
+
+(deftemplate Mother
+	(slot mother)
+	(slot son)
+)
+
+(deftemplate Parents
+	(slot parent)
+	(slot son)
+)
+
+(deftemplate Grandfather
+	(slot grandfather)
+	(slot son)
+)
+
+(deftemplate Grandmother
+	(slot grandmother)
+	(slot son)
+)
+
+(assert (father Ahmed Mohammed))
+(assert (father Ali Sara))
+(assert (father Hassan Ahmed))
+(assert (mother Mona Ali))
+
+
+(defrule parents
+	(or (father ?x ?y) (mother ?x ?y) )
+	=> (assert(parent ?x ?y))
+)
+
+
+(defrule grandfather
+    (and (father ?x ?y) (parent ?y ?z))
+	=> (assert(grandfather ?x ?z))
+)
+
+
+(defrule grandmother
+	(and (mother ?x ?y) (parent ?y ?z))
+	=> (assert(grandmother ?x ?z))
+)
+
+;(run)
+;(facts)
+
+---------------------------------------------------------------------------
+---------------------------------------------------------------------------
+
+problem two:
+----------
+(deffacts table
+	(country Egypt red white black)
+	(country United-states red white blue)
+	(country Belgium black yellow red)
+	(country Sweden yellow blue)
+	(country Italy green white red)
+	(country Ireland green white orange)
+	(country Greece blue white)
+)
+
+(defrule read-input 
+=>
+	(printout t "Enter the color value " crlf)
+	(assert (color (read)))
+)
+
+(defrule getCountryWith3Colors
+	(color ?col)
+	(country ?name ?c1 ?c2 ?c3)
+	(or (test (eq ?col ?c1)) (test (eq ?col ?c2)) (test (eq ?col ?c3)) )
+=>
+	(printout t ?name crlf)
+)
+
+(defrule getCountryWith2Colors
+	(color ?col)
+	(country ?name ?c1 ?c2)
+	(or (test (eq ?col ?c1)) (test (eq ?col ?c2)))
+=>
+	(printout t ?name crlf)
+)
+
+;(reset)
+;(run)
+
+-----------------------------
+Problem2 v2
+
+(deftemplate table
+	(slot Country)
+	(multislot Flag-Color) 
+)
+
+(deffacts data
+	(table 
+	     (Country Egypt)
+	     (Flag-Color red white black)
+	)
+	(table 
+	     (Country United-states)
+	     (Flag-Color red white blue)
+	)
+	(table 
+	     (Country Belgium)
+	     (Flag-Color black yellow red)
+	)
+	(table 
+	     (Country Sweden)
+	     (Flag-Color yellow blue)
+	)
+	(table 
+	     (Country Italy)
+	     (Flag-Color green white red)
+	)
+	(table 
+	     (Country Ireland)
+	     (Flag-Color green white orange)
+	)
+	(table 
+	     (Country Greece)
+	     (Flag-Color blue white)
+	)
+)
+
+
+(defrule read-input 
+=>
+	(printout t "Enter the color value " crlf)
+	(assert (color (read)))
+)
+
+(defrule getCountry
+	(color ?col)
+	(table (Country ?country) (Flag-Color $?flag-Color))
+	(test (member$ ?col ?flag-Color))
+=>
+	(printout t ?country crlf)
+)
+
+;(reset)
+;(run)
+;(exit)
+-----------------------------------------------------------------------------------------
+-----------------------------------------------------------------------------------------
+problem three:
+-------------
+
+;problem 3
+
+(deftemplate student
+  (slot name)
+  (multislot grades)
+)
+
+
+(defrule read-input 
+	(declare (salience 30))
+  =>
+    (open "input.dat" file "r")
+    (bind ?name (read file))
+    (while (neq ?name EOF)
+		(bind ?c1 (read file))
+		(bind ?c2 (read file))
+		(bind ?c3 (read file))
+		(bind ?c4 (read file))
+		(assert (student(name ?name)(grades ?c1 ?c2 ?c3 ?c4)))
+        (bind ?name (read file))
+	)
+    (close file)
+)
+
+
+
+(defrule grades-gpa 
+  (declare (salience 20))
+  (student (name ?name) (grades $?grades))
+  => 
+  (bind ?gpa (/ (+ (expand$ ?grades)) 4))
+  (open "output.dat" file "a")
+  (printout file ?name "      " $?grades "  " ?gpa " " crlf)
+  (close file)
+  
+)
+
+
+-----------------------------------------------------------------------------------------
+-----------------------------------------------------------------------------------------
+
+problem four : 
+-----------
+;problem 4
+; your code goes here
+
+(defclass Shape
+	(is-a USER)
+	(role abstract)
+	(slot ID (type SYMBOL))
+	(slot color (allowed-values red blue green yellow))
+)
+
+;-------------------------------------------------------
+(defclass Square
+	(is-a Shape)
+	(role concrete)
+	(slot length)
+)
+
+(defmessage-handler Square calcArea ()
+	(bind ?length (send ?self get-length))
+	(bind ?Area (* ?length ?length))
+	(printout t  ?Area crlf)
+)
+
+(defmessage-handler Square calcPerimeter ()
+	(bind ?length (send ?self get-length))
+	(bind ?perimeter (* ?length 4))
+	(printout t  ?perimeter crlf)
+)
+
+;-------------------------------------------
+(defclass Rectangle
+	(is-a Shape)
+	(role concrete)
+	(slot width)
+	(slot length)
+)
+
+(defmessage-handler Rectangle calcArea ()
+	(bind ?length (send ?self get-length))
+	(bind ?width (send ?self get-width))
+	(bind ?Area (* ?length ?width))
+	(printout t  ?Area crlf)
+)
+
+(defmessage-handler Rectangle calcPerimeter ()
+	(bind ?length (send ?self get-length))
+	(bind ?width (send ?self get-width))
+	(bind ?perimeter (* (+ ?length ?width) 2))
+	(printout t  ?perimeter crlf)
+)
+;------------------------------------------
+
+(definstances shapes 
+	(s1 of Square (ID A)(color blue) (length 3))
+	(r1 of Rectangle (ID C) (width 2) (length 5))
+)
+
+;(reset)
+
+(send [s1] calcArea)
+(send [r1] calcArea)
+
+;(send [s1] calcPerimeter)
+;(send [r1] calcPerimeter)
+
+
+;(instances)
+
+;(exit)
+; empty line at the end
+
+----------------------------------------------------------------------------------------------
+-----------------------------------------------------------------------------------------------
+
+Problem five:
+-----------
+;problem 5
+(deftemplate square 
+	(slot id) 
+	(slot side-length)
+)
+
+(deftemplate rectangle 
+	(slot id)	
+	(slot width) 
+	(slot length)
+)
+
+(deftemplate circle 
+	(slot id) 
+	(slot radius)
+)
+
+(deffacts shapes
+	(square (id A) (side-length 3))
+	(square (id B) (side-length 5))
+	
+	(rectangle (id C) (width 2) (length 5))
+	
+	(circle (id D) (radius 2))
+	(circle (id E) (radius 6))
+	
+	(sumSquareArea 0)
+	(sumRectangleArea 0)
+	(sumcircleArea 0)
+	
+	(sumSquarePerimeters 0)
+	(sumRectanglePerimeters 0)
+	(sumcirclePerimeters 0)
+)
+(reset)
+
+;-------------------Perimeters-----and------Areas-----------------------------
+
+(defrule sum-rectangles
+	(declare (salience 30))
+	?f1 <-(rectangle (id ?id) (width ?w) (length ?l))
+	?f2 <-(sumRectangleArea ?sumA)
+	?f3 <-(sumRectanglePerimeters ?sumP)
+=>
+	(retract ?f1 ?f2 ?f3)
+	(assert (sumRectangleArea (+ ?sumA (* ?w ?l))))
+	(assert (sumRectanglePerimeters (+ ?sumP (* (+ ?w ?l) 2))))
+)
+
+(defrule sum-squares
+	(declare (salience 30))
+	?f1 <-(square (id ?id) (side-length ?sl))
+	?f2 <-(sumSquareArea ?sumA)
+	?f3 <-(sumSquarePerimeters ?sumP)
+=>
+	(retract ?f1 ?f2 ?f3)
+	(assert (sumSquareArea (+ ?sumA (* ?sl ?sl))))
+	(assert (sumSquarePerimeters (+ ?sumP (* ?sl 4))))
+)
+
+(defrule sum-circles
+	(declare (salience 30))
+	?f1 <-(circle (id ?id) (radius ?r))
+	?f2 <-(sumcircleArea ?sumA)
+	?f3 <-(sumcirclePerimeters ?sumP)
+=>
+	(retract ?f1 ?f2 ?f3)
+	(assert (sumcircleArea (+ ?sumA (* 3.14 ?r ?r))))
+	(assert (sumcirclePerimeters (+ ?sumP (* 2 3.14 ?r ))))
+)
+
+(defrule totalAreas
+	(declare (salience 10))
+	(sumcircleArea ?sc)
+	(sumSquareArea ?ss)
+	(sumRectangleArea ?sr)
+=>
+	(assert (totalArea = (+ ?sc ?ss ?sr)))
+)
+
+(defrule totalPerimeters
+	(declare (salience 10))
+	(sumcirclePerimeters ?sc)
+	(sumSquarePerimeters ?ss)
+	(sumRectanglePerimeters ?sr)
+=>
+	(assert (totalPerimeters = (+ ?sc ?ss ?sr)))
+)
+
+(defrule printTotalAreas
+	(declare (salience 1))
+	(totalArea ?total)
+=>
+	(printout t "Total Sum Of Areas = " ?total crlf)
+)
+
+(defrule printTotalPerimeters
+	(declare (salience 1))
+	(totalPerimeters ?total)
+=>
+	(printout t "Total Sum Of Perimeters = " ?total crlf)
+)
+
+
+(run)
+;(facts)
+(exit)
+; empty line at the end
+
+----------------------------------------------------------------------------------------
+----------------------------------------------------------------------------------------
+
+Problem six:
+----------
+;problem 6
+(deftemplate Person
+	(multislot full-name)
+	(multislot children)
+)
+
+(deffacts name
+	(Person (full-name Asmaa Refat abd ELmabood)
+		    (children yara ahmed noura mohamed)
+    )
+
+	(Person (full-name Fayza Ahmed Abo Zied)
+		    (children yaseen jasmin)
+    ) 
+    
+    (Person (full-name hasnaa Ahmed Abo Zied)
+		    (children hasona rashida bakar cindrella)
+    ) 
+)
+(reset)
+
+
+;Define a rule that prints the parents that have more than 3 children
+
+(defrule printParents
+	(Person (full-name $?name) (children $?children))
+	(test (> (length$ ?children) 3))
+=>
+	(printout t $?name crlf)
+)
+
+;Define a rule that print the parent of a certain child
+;The specified child name will be asserted in a fact called (child-name <name>)
+
+(assert(child-name yaseen))
+
+(defrule parentOfCertainChild
+	(child-name ?childName) 
+	(Person (full-name $?name) (children $?children))
+	(test (member$ ?childName ?children))
+=>
+	(printout t $?name crlf)
+)
+
+
+(run)
+(exit)
+; empty line at the end
+-----------------------------------------------------------------------------------------------
