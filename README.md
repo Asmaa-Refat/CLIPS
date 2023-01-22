@@ -1,1 +1,3 @@
-# CLIPS
+# CLIPS (programming language)
+
+### Semantic Web
